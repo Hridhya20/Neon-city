@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEON CITY</title>
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#071018;
+    font-family:Arial,sans-serif;
+    color:white;
+}
+
+canvas{
+    display:block;
+    width:100%;
+    height:100%;
+    background:#102b38;
+}
+
+/* HUD */
+
+#hud{
+    position:fixed;
+    top:15px;
+    left:15px;
+    z-index:20;
+    width:245px;
+    padding:15px;
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:14px;
+    background:rgba(0,0,0,.78);
+    box-shadow:0 0 20px rgba(255,70,190,.15);
+}
+
+#title{
+    font-size:24px;
+    font-weight:900;
+    color:#ff5bbd;
+    letter-spacing:2px;
+    margin-bottom:10px;
+}
+
+.stat{
+    margin:6px 0;
+    font-size:14px;
+}
+
+#money{
+    color:#69ff9b;
+    font-weight:bold;
+}
+
+#wanted{
+    color:#ffd447;
+    letter-spacing:2px;
+}
+
+/* MISSION */
+
+#mission{
+    position:fixed;
+    top:15px;
+    right:15px;
+    z-index:20;
+    width:310px;
+    padding:16px;
+    border-radius:14px;
+    background:rgba(0,0,0,.78);
+    border:1px solid rgba(255,91,189,.35);
+    box-shadow:0 0 20px rgba(255,91,189,.15);
+}
+
+#missionHeader{
+    color:#ff5bbd;
+    font-weight:bold;
+    font-size:13px;
+    letter-spacing:2px;
+}
+
+#missionText{
+    margin:9px 0;
+    font-size:16px;
+    line-height:1.35;
+}
+
+#progressOuter{
+    width:100%;
+    height:8px;
+    background:#24242b;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+#progressBar{
+    width:0%;
+    height:100%;
+    background:#ff5bbd;
+    transition:width .15s linear;
+}
+
+/* MESSAGE */
+
+#message{
+    position:fixed;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:20;
+    padding:12px 20px;
+    border-radius:12px;
+    background:rgba(0,0,0,.82);
+    font-weight:bold;
+    text-align:center;
+    pointer-events:none;
+}
+
+/* CONTROLS */
+
+#controls{
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    z-index:30;
+    display:grid;
+    grid-template-columns:60px 60px 60px;
+    grid-template-rows:60px 60px 60px;
+    gap:7px;
+    user-select:none;
+}
+
+.control-btn,
+.action-btn{
+    border:2px solid rgba(255,255,255,.45);
+    border-radius:15px;
+    background:rgba(0,0,0,.7);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    touch-action:none;
+}
+
+.control-btn{
+    font-size:25px;
+}
+
+.control-btn:active,
+.action-btn:active{
+    background:#ff5bbd;
+}
+
+#up{grid-column:2;grid-row:1}
+#left{grid-column:1;grid-row:2}
+#down{grid-column:2;grid-row:2}
+#right{grid-column:3;grid-row:2}
+
+#actionButtons{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:30;
+    display:flex;
+    gap:8px;
+}
+
+.action-btn{
+    width:78px;
+    height:60px;
+    font-size:12px;
+}
+
+/* LEVEL COMPLETE */
+
+#levelScreen{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.78);
+}
+
+#levelBox{
+    width:min(430px,90vw);
+    padding:35px;
+    border-radius:20px;
+    text-align:center;
+    background:#10151d;
+    border:2px solid #ff5bbd;
+    box-shadow:0 0 50px rgba(255,91,189,.3);
+}
+
+#levelTitle{
+    color:#ff5bbd;
+    font-size:32px;
+    font-weight:900;
+}
+
+#levelReward{
+    margin:15px 0;
+    color:#69ff9b;
+    font-size:20px;
+}
+
+/* FINAL */
+
+#finalScreen{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background:rgba(3,5,12,.94);
+}
+
+#finalTitle{
+    color:#ff5bbd;
+    font-size:clamp(40px,8vw,80px);
+    font-weight:900;
+    letter-spacing:5px;
+}
+
+#finalSub{
+    font-size:20px;
+    margin:20px;
+}
+
+#restartButton{
+    padding:14px 30px;
+    border:0;
+    border-radius:12px;
+    background:#ff5bbd;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* MOBILE */
+
+@media(max-width:700px){
+    #hud{
+        width:190px;
+        padding:10px;
+    }
+
+    #title{
+        font-size:18px;
+    }
+
+    #mission{
+        width:220px;
+        top:125px;
+    }
+
+    #message{
+        bottom:95px;
+        font-size:12px;
+        max-width:80%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+    <div id="title">NEON CITY</div>
+
+    <div class="stat">
+        Money: $<span id="money">500</span>
+    </div>
+
+    <div class="stat">
+        Wanted: <span id="wanted">☆☆☆☆☆</span>
+    </div>
+
+    <div class="stat">
+        Vehicle: <span id="vehicle">On Foot</span>
+    </div>
+</div>
+
+<div id="mission">
+    <div id="missionHeader">MISSION <span id="missionNumber">1</span>/15</div>
+
+    <div id="missionText">
+        Find and enter the pink car.
+    </div>
+
+    <div id="progressOuter">
+        <div id="progressBar"></div>
+    </div>
+</div>
+
+<div id="message">
+    WASD / ARROWS = MOVE • E = CAR • SHIFT = SPRINT • R = RESET
+</div>
+
+<div id="controls">
+    <button class="control-btn" id="up">▲</button>
+    <button class="control-btn" id="left">◀</button>
+    <button class="control-btn" id="down">▼</button>
+    <button class="control-btn" id="right">▶</button>
+</div>
+
+<div id="actionButtons">
+    <button class="action-btn" id="enterBtn">E<br>CAR</button>
+    <button class="action-btn" id="resetBtn">R<br>RESET</button>
+</div>
+
+<div id="levelScreen">
+    <div id="levelBox">
+        <div id="levelTitle">MISSION COMPLETE</div>
+        <div id="levelReward">+$500</div>
+        <div>Next mission loading...</div>
+    </div>
+</div>
+
+<div id="finalScreen">
+    <div>
+        <div id="finalTitle">NEON CITY</div>
+        <div id="finalSub">
+            🏆 ALL 15 MISSIONS COMPLETE 🏆
+            <br><br>
+            You completed the entire city!
+        </div>
+        <button id="restartButton">PLAY AGAIN</button>
+    </div>
+</div>
+
+<script>
+
+/* =========================================================
+   NEON CITY — GAME ENGINE
+========================================================= */
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+resize();
+window.addEventListener("resize", resize);
+
+
+/* =========================================================
+   WORLD
+========================================================= */
+
+const WORLD_WIDTH = 3600;
+const WORLD_HEIGHT = 2700;
+
+const roads = [
+
+    {x:0,y:350,w:WORLD_WIDTH,h:150},
+    {x:0,y:1050,w:WORLD_WIDTH,h:150},
+    {x:0,y:1750,w:WORLD_WIDTH,h:150},
+    {x:0,y:2350,w:WORLD_WIDTH,h:150},
+
+    {x:400,y:0,w:150,h:WORLD_HEIGHT},
+    {x:1150,y:0,w:150,h:WORLD_HEIGHT},
+    {x:1900,y:0,w:150,h:WORLD_HEIGHT},
+    {x:2600,y:0,w:150,h:WORLD_HEIGHT},
+    {x:3250,y:0,w:150,h:WORLD_HEIGHT}
+
+];
+
+const buildings = [];
+
+function createBuildings(){
+
+    for(let x=40;x<WORLD_WIDTH-100;x+=220){
+
+        for(let y=40;y<WORLD_HEIGHT-100;y+=220){
+
+            const nearRoad = roads.some(r =>
+                x < r.x+r.w+25 &&
+                x+150 > r.x-25 &&
+                y < r.y+r.h+25 &&
+                y+150 > r.y-25
+            );
+
+            if(nearRoad) continue;
+
+            buildings.push({
+                x,
+                y,
+                w:150,
+                h:150,
+                color:[
+                    "#563867",
+                    "#344c72",
+                    "#70413d",
+                    "#28545c",
+                    "#684c32"
+                ][Math.floor(Math.random()*5)]
+            });
+
+        }
+
+    }
+
+}
+
+createBuildings();
+
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+const player = {
+
+    x:750,
+    y:425,
+
+    speed:3,
+
+    angle:0,
+
+    inCar:false
+
+};
+
+
+/* =========================================================
+   CAR
+========================================================= */
+
+const car = {
+
+    x:850,
+    y:425,
+
+    speed:0,
+
+    angle:0,
+
+    maxSpeed:8
+
+};
+
+
+/* =========================================================
+   POLICE
+========================================================= */
+
+const police=[];
+
+for(let i=0;i<12;i++){
+
+    police.push({
+
+        x:Math.random()*WORLD_WIDTH,
+        y:Math.random()*WORLD_HEIGHT,
+
+        angle:Math.random()*Math.PI*2,
+
+        speed:1.5+Math.random()*.5
+
+    });
+
+}
+
+
+/* =========================================================
+   NPCs
+========================================================= */
+
+const npcs=[];
+
+for(let i=0;i<90;i++){
+
+    npcs.push({
+
+        x:Math.random()*WORLD_WIDTH,
+        y:Math.random()*WORLD_HEIGHT,
+
+        angle:Math.random()*Math.PI*2,
+
+        speed:.35+Math.random()*.7
+
+    });
+
+}
+
+
+/* =========================================================
+   GAME DATA
+========================================================= */
+
+let money=500;
+
+let wanted=0;
+
+let currentMission=0;
+
+let missionComplete=false;
+
+let missionProgress=0;
+
+let escapeStarted=false;
+
+let lastX=player.x;
+
+let lastY=player.y;
+
+const keys={};
+
+
+/* =========================================================
+   15 MISSIONS
+========================================================= */
+
+const missions=[
+
+    {
+        type:"enterCar",
+        text:"Find and enter the pink car."
+    },
+
+    {
+        type:"drive",
+        target:400,
+        text:"Drive 400 meters."
+    },
+
+    {
+        type:"location",
+        x:1150,
+        y:1125,
+        target:100,
+        text:"Drive to the central intersection."
+    },
+
+    {
+        type:"drive",
+        target:700,
+        text:"Drive 700 meters."
+    },
+
+    {
+        type:"location",
+        x:1900,
+        y:1825,
+        target:120,
+        text:"Reach the southern district."
+    },
+
+    {
+        type:"wanted",
+        target:1,
+        text:"Get 1 wanted star."
+    },
+
+    {
+        type:"escape",
+        target:1,
+        text:"Lose the police."
+    },
+
+    {
+        type:"drive",
+        target:1000,
+        text:"Drive 1000 meters."
+    },
+
+    {
+        type:"location",
+        x:2600,
+        y:1125,
+        target:120,
+        text:"Reach the eastern city district."
+    },
+
+    {
+        type:"wanted",
+        target:2,
+        text:"Reach 2 wanted stars."
+    },
+
+    {
+        type:"escape",
+        target:2,
+        text:"Escape the police again."
+    },
+
+    {
+        type:"drive",
+        target:1500,
+        text:"Drive 1500 meters."
+    },
+
+    {
+        type:"location",
+        x:3250,
+        y:2425,
+        target:130,
+        text:"Reach the far eastern safe zone."
+    },
+
+    {
+        type:"drive",
+        target:2000,
+        text:"Complete the long city drive."
+    },
+
+    {
+        type:"final",
+        target:2500,
+        text:"FINAL MISSION: Drive 2500 meters!"
+    }
+
+];
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+window.addEventListener("keydown",e=>{
+
+    const k=e.key.toLowerCase();
+
+    keys[k]=true;
+
+    if(
+        [
+            "w","a","s","d",
+            "arrowup","arrowdown",
+            "arrowleft","arrowright",
+            "shift"," ","e","r"
+        ].includes(k)
+    ){
+
+        e.preventDefault();
+
+    }
+
+    if(k==="e"){
+        enterExitCar();
+    }
+
+    if(k==="r"){
+        resetGame();
+    }
+
+});
+
+window.addEventListener("keyup",e=>{
+
+    keys[e.key.toLowerCase()]=false;
+
+});
+
+
+/* =========================================================
+   COLLISION
+========================================================= */
+
+function buildingCollision(x,y){
+
+    return buildings.some(b =>
+
+        x > b.x-18 &&
+        x < b.x+b.w+18 &&
+        y > b.y-18 &&
+        y < b.y+b.h+18
+
+    );
+
+}
+
+
+/* =========================================================
+   CAR ENTER / EXIT
+========================================================= */
+
+function enterExitCar(){
+
+    const distance=Math.hypot(
+        player.x-car.x,
+        player.y-car.y
+    );
+
+    if(player.inCar){
+
+        player.inCar=false;
+
+        player.x=car.x+50;
+        player.y=car.y;
+
+        showMessage("You left the car.");
+
+        return;
+
+    }
+
+    if(distance<80){
+
+        player.inCar=true;
+
+        showMessage("You entered the pink car!");
+
+        if(wanted<1){
+            wanted=.5;
+        }
+
+    }else{
+
+        showMessage("Get closer to the pink car.");
+
+    }
+
+}
+
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+function updatePlayer(){
+
+    if(player.inCar){
+
+        updateCar();
+
+        player.x=car.x;
+        player.y=car.y;
+
+        player.angle=car.angle;
+
+        return;
+
+    }
+
+    let dx=0;
+    let dy=0;
+
+    if(keys["w"]||keys["arrowup"])dy--;
+
+    if(keys["s"]||keys["arrowdown"])dy++;
+
+    if(keys["a"]||keys["arrowleft"])dx--;
+
+    if(keys["d"]||keys["arrowright"])dx++;
+
+    if(dx!==0||dy!==0){
+
+        const len=Math.hypot(dx,dy);
+
+        dx/=len;
+        dy/=len;
+
+        const speed=keys["shift"]?5:3;
+
+        const nx=player.x+dx*speed;
+        const ny=player.y+dy*speed;
+
+        if(
+            nx>20 &&
+            nx<WORLD_WIDTH-20 &&
+            ny>20 &&
+            ny<WORLD_HEIGHT-20 &&
+            !buildingCollision(nx,ny)
+        ){
+
+            player.x=nx;
+            player.y=ny;
+
+        }
+
+        player.angle=Math.atan2(dy,dx);
+
+    }
+
+}
+
+
+/* =========================================================
+   CAR
+========================================================= */
+
+function updateCar(){
+
+    if(keys["w"]||keys["arrowup"]){
+
+        car.speed+=.18;
+
+    }
+
+    if(keys["s"]||keys["arrowdown"]){
+
+        car.speed-=.12;
+
+    }
+
+    if(keys[" "]){
+        car.speed*=.90;
+    }
+
+    car.speed*=.985;
+
+    car.speed=Math.max(-3,Math.min(car.maxSpeed,car.speed));
+
+    if(keys["a"]||keys["arrowleft"]){
+
+        car.angle-=.045;
+
+    }
+
+    if(keys["d"]||keys["arrowright"]){
+
+        car.angle+=.045;
+
+    }
+
+    const nx=
+        car.x+
+        Math.cos(car.angle)*car.speed;
+
+    const ny=
+        car.y+
+        Math.sin(car.angle)*car.speed;
+
+    if(
+        nx>20 &&
+        nx<WORLD_WIDTH-20 &&
+        ny>20 &&
+        ny<WORLD_HEIGHT-20 &&
+        !buildingCollision(nx,ny)
+    ){
+
+        car.x=nx;
+        car.y=ny;
+
+    }else{
+
+        car.speed*=-.4;
+
+        wanted=Math.min(5,wanted+.1);
+
+    }
+
+}
+
+
+/* =========================================================
+   NPCs
+========================================================= */
+
+function updateNPCs(){
+
+    npcs.forEach(n=>{
+
+        n.x+=Math.cos(n.angle)*n.speed;
+        n.y+=Math.sin(n.angle)*n.speed;
+
+        if(
+            n.x<20||
+            n.x>WORLD_WIDTH-20||
+            n.y<20||
+            n.y>WORLD_HEIGHT-20||
+            buildingCollision(n.x,n.y)
+        ){
+
+            n.angle+=Math.PI*(.5+Math.random());
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   POLICE
+========================================================= */
+
+function updatePolice(){
+
+    police.forEach(p=>{
+
+        if(wanted<=0){
+
+            p.x+=Math.cos(p.angle)*.3;
+            p.y+=Math.sin(p.angle)*.3;
+
+            return;
+
+        }
+
+        const dx=player.x-p.x;
+        const dy=player.y-p.y;
+
+        const distance=Math.hypot(dx,dy);
+
+        if(distance<900){
+
+            p.angle=Math.atan2(dy,dx);
+
+            p.x+=Math.cos(p.angle)*p.speed;
+            p.y+=Math.sin(p.angle)*p.speed;
+
+        }
+
+        if(distance<45){
+
+            money=Math.max(0,money-50);
+
+            wanted=Math.max(0,wanted-.5);
+
+            showMessage("Police caught you! -$50");
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   WANTED
+========================================================= */
+
+function updateWanted(){
+
+    if(wanted>0){
+
+        wanted-=.0007;
+
+        if(wanted<0){
+            wanted=0;
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   MISSIONS
+========================================================= */
+
+function updateMission(){
+
+    if(missionComplete)return;
+
+    const m=missions[currentMission];
+
+    if(!m)return;
+
+
+    /* ENTER CAR */
+
+    if(m.type==="enterCar"){
+
+        if(player.inCar){
+
+            completeMission();
+
+            return;
+
+        }
+
+    }
+
+
+    /* DRIVE DISTANCE */
+
+    if(
+        player.inCar &&
+        (
+            m.type==="drive"||
+            m.type==="final"
+        )
+    ){
+
+        const movement=Math.hypot(
+            player.x-lastX,
+            player.y-lastY
+        );
+
+        missionProgress+=movement;
+
+    }
+
+
+    lastX=player.x;
+    lastY=player.y;
+
+
+    /* DRIVE */
+
+    if(
+        m.type==="drive"||
+        m.type==="final"
+    ){
+
+        if(missionProgress>=m.target){
+
+            completeMission();
+
+            return;
+
+        }
+
+    }
+
+
+    /* LOCATION */
+
+    if(m.type==="location"){
+
+        const distance=Math.hypot(
+            player.x-m.x,
+            player.y-m.y
+        );
+
+        if(
+            player.inCar &&
+            distance<=m.target
+        ){
+
+            completeMission();
+
+            return;
+
+        }
+
+    }
+
+
+    /* WANTED */
+
+    if(m.type==="wanted"){
+
+        if(wanted>=m.target){
+
+            completeMission();
+
+            return;
+
+        }
+
+    }
+
+
+    /* ESCAPE */
+
+    if(m.type==="escape"){
+
+        if(wanted>=m.target){
+
+            escapeStarted=true;
+
+        }
+
+        if(
+            escapeStarted &&
+            wanted<=0
+        ){
+
+            escapeStarted=false;
+
+            completeMission();
+
+            return;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   MISSION COMPLETE
+========================================================= */
+
+function completeMission(){
+
+    missionComplete=true;
+
+    money+=500;
+
+    document.getElementById("levelReward").innerText=
+        "+$500";
+
+    document.getElementById("levelScreen").style.display=
+        "flex";
+
+    document.getElementById("message").innerText=
+        "MISSION COMPLETE!";
+
+    setTimeout(()=>{
+
+        document.getElementById("levelScreen").style.display=
+            "none";
+
+        currentMission++;
+
+        missionProgress=0;
+
+        escapeStarted=false;
+
+        lastX=player.x;
+        lastY=player.y;
+
+        if(currentMission>=missions.length){
+
+            finishGame();
+
+            return;
+
+        }
+
+        missionComplete=false;
+
+        updateMissionUI();
+
+        showMessage(
+            "MISSION "+
+            (currentMission+1)+
+            " STARTED!"
+        );
+
+    },1600);
+
+}
+
+
+/* =========================================================
+   MISSION UI
+========================================================= */
+
+function updateMissionUI(){
+
+    const m=missions[currentMission];
+
+    document.getElementById("missionNumber").innerText=
+        currentMission+1;
+
+    document.getElementById("missionText").innerText=
+        m.text;
+
+    let percent=0;
+
+    if(m.type==="drive"||m.type==="final"){
+
+        percent=
+            Math.min(
+                100,
+                (missionProgress/m.target)*100
+            );
+
+    }
+
+    else if(m.type==="enterCar"){
+
+        percent=player.inCar?100:0;
+
+    }
+
+    else if(m.type==="location"){
+
+        const d=Math.hypot(
+            player.x-m.x,
+            player.y-m.y
+        );
+
+        percent=
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    100-(d/1000*100)
+                )
+            );
+
+    }
+
+    else if(m.type==="wanted"){
+
+        percent=
+            Math.min(
+                100,
+                (wanted/m.target)*100
+            );
+
+    }
+
+    else if(m.type==="escape"){
+
+        percent=
+            escapeStarted?50:0;
+
+    }
+
+    document.getElementById("progressBar").style.width=
+        percent+"%";
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+let messageTimer=null;
+
+function showMessage(text){
+
+    const el=document.getElementById("message");
+
+    el.innerText=text;
+
+    clearTimeout(messageTimer);
+
+    messageTimer=setTimeout(()=>{
+
+        el.innerText=
+            "WASD / ARROWS = MOVE • E = CAR • SHIFT = SPRINT • R = RESET";
+
+    },2200);
+
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+function updateHUD(){
+
+    document.getElementById("money").innerText=
+        Math.floor(money);
+
+    const stars=Math.ceil(wanted);
+
+    document.getElementById("wanted").innerText=
+        "★".repeat(stars)+
+        "☆".repeat(5-stars);
+
+    document.getElementById("vehicle").innerText=
+        player.inCar?
+        "Pink Car":
+        "On Foot";
+
+    updateMissionUI();
+
+}
+
+
+/* =========================================================
+   DRAW WORLD
+========================================================= */
+
+function drawWorld(){
+
+    /* CITY */
+
+    ctx.fillStyle="#143d4c";
+
+    ctx.fillRect(
+        0,
+        0,
+        WORLD_WIDTH,
+        WORLD_HEIGHT
+    );
+
+
+    /* WATER */
+
+    ctx.fillStyle="#0b344c";
+
+    ctx.fillRect(
+        0,
+        0,
+        240,
+        WORLD_HEIGHT
+    );
+
+    ctx.fillRect(
+        0,
+        WORLD_HEIGHT-190,
+        WORLD_WIDTH,
+        190
+    );
+
+
+    /* ROADS */
+
+    roads.forEach(r=>{
+
+        ctx.fillStyle="#34373d";
+
+        ctx.fillRect(
+            r.x,
+            r.y,
+            r.w,
+            r.h
+        );
+
+        ctx.strokeStyle="#d9c75c";
+
+        ctx.lineWidth=4;
+
+        ctx.setLineDash([30,25]);
+
+        ctx.beginPath();
+
+        if(r.w>r.h){
+
+            ctx.moveTo(
+                r.x,
+                r.y+r.h/2
+            );
+
+            ctx.lineTo(
+                r.x+r.w,
+                r.y+r.h/2
+            );
+
+        }else{
+
+            ctx.moveTo(
+                r.x+r.w/2,
+                r.y
+            );
+
+            ctx.lineTo(
+                r.x+r.w/2,
+                r.y+r.h
+            );
+
+        }
+
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+
+    });
+
+
+    /* BUILDINGS */
+
+    buildings.forEach(b=>{
+
+        ctx.fillStyle="#0b1117";
+
+        ctx.fillRect(
+            b.x+8,
+            b.y+10,
+            b.w,
+            b.h
+        );
+
+        ctx.fillStyle=b.color;
+
+        ctx.fillRect(
+            b.x,
+            b.y,
+            b.w,
+            b.h
+        );
+
+        for(
+            let xx=b.x+20;
+            xx<b.x+b.w-15;
+            xx+=30
+        ){
+
+            for(
+                let yy=b.y+20;
+                yy<b.y+b.h-15;
+                yy+=30
+            ){
+
+                ctx.fillStyle=
+                    Math.random()>.3?
+                    "#ffd76b":
+                    "#18252d";
+
+                ctx.fillRect(
+                    xx,
+                    yy,
+                    10,
+                    8
+                );
+
+            }
+
+        }
+
+    });
+
+
+    /* NPCs */
+
+    npcs.forEach(n=>{
+
+        ctx.fillStyle="#f1c29f";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            n.x,
+            n.y-8,
+            5,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle="#54b9d7";
+
+        ctx.fillRect(
+            n.x-5,
+            n.y-3,
+            10,
+            15
+        );
+
+    });
+
+
+    /* POLICE */
+
+    police.forEach(p=>{
+
+        ctx.save();
+
+        ctx.translate(p.x,p.y);
+
+        ctx.rotate(p.angle);
+
+        ctx.fillStyle="#eeeeee";
+
+        ctx.fillRect(
+            -25,
+            -12,
+            50,
+            24
+        );
+
+        ctx.fillStyle="#222";
+
+        ctx.fillRect(
+            -5,
+            -12,
+            10,
+            24
+        );
+
+        ctx.fillStyle="#ff3333";
+
+        ctx.fillRect(
+            -6,
+            -17,
+            12,
+            5
+        );
+
+        ctx.fillStyle="#3498ff";
+
+        ctx.fillRect(
+            -6,
+            12,
+            12,
+            5
+        );
+
+        ctx.restore();
+
+    });
+
+
+    /* CAR */
+
+    ctx.save();
+
+    ctx.translate(car.x,car.y);
+
+    ctx.rotate(car.angle);
+
+    /* glow */
+
+    ctx.shadowBlur=18;
+
+    ctx.shadowColor="#ff3fae";
+
+    ctx.fillStyle="#f04fa8";
+
+    ctx.fillRect(
+        -34,
+        -16,
+        68,
+        32
+    );
+
+    ctx.shadowBlur=0;
+
+    ctx.fillStyle="#7ddce8";
+
+    ctx.fillRect(
+        -8,
+        -12,
+        27,
+        24
+    );
+
+    ctx.fillStyle="#111";
+
+    ctx.fillRect(-27,-20,14,5);
+    ctx.fillRect(13,-20,14,5);
+    ctx.fillRect(-27,15,14,5);
+    ctx.fillRect(13,15,14,5);
+
+    ctx.restore();
+
+
+    /* PLAYER */
+
+    if(!player.inCar){
+
+        ctx.fillStyle="#f4c5a1";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            player.x,
+            player.y-12,
+            7,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle="#ffffff";
+
+        ctx.fillRect(
+            player.x-7,
+            player.y-5,
+            14,
+            20
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MINIMAP
+========================================================= */
+
+function drawMinimap(){
+
+    const size=180;
+
+    const x=canvas.width-size-15;
+    const y=canvas.height-size-15;
+
+    ctx.fillStyle="rgba(0,0,0,.78)";
+
+    ctx.fillRect(
+        x,
+        y,
+        size,
+        size
+    );
+
+    const sx=size/WORLD_WIDTH;
+    const sy=size/WORLD_HEIGHT;
+
+    roads.forEach(r=>{
+
+        ctx.fillStyle="#555";
+
+        ctx.fillRect(
+            x+r.x*sx,
+            y+r.y*sy,
+            r.w*sx,
+            r.h*sy
+        );
+
+    });
+
+
+    /* CAR MARKER */
+
+    ctx.fillStyle="#ff5bbd";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x+car.x*sx,
+        y+car.y*sy,
+        4,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* PLAYER */
+
+    ctx.fillStyle="#ffffff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x+player.x*sx,
+        y+player.y*sy,
+        5,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* POLICE */
+
+    ctx.fillStyle="#ff3333";
+
+    police.forEach(p=>{
+
+        ctx.fillRect(
+            x+p.x*sx-2,
+            y+p.y*sy-2,
+            4,
+            4
+        );
+
+    });
+
+
+    /* MISSION LOCATION */
+
+    const m=missions[currentMission];
+
+    if(
+        m &&
+        m.type==="location"
+    ){
+
+        ctx.strokeStyle="#69ff9b";
+
+        ctx.lineWidth=2;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x+m.x*sx,
+            y+m.y*sy,
+            7,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
+
+    }
+
+}
+
+
+/* =========================================================
+   CAMERA + RENDER
+========================================================= */
+
+function render(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    let cameraX=
+        player.x-
+        canvas.width/2;
+
+    let cameraY=
+        player.y-
+        canvas.height/2;
+
+    cameraX=Math.max(
+        0,
+        Math.min(
+            WORLD_WIDTH-canvas.width,
+            cameraX
+        )
+    );
+
+    cameraY=Math.max(
+        0,
+        Math.min(
+            WORLD_HEIGHT-canvas.height,
+            cameraY
+        )
+    );
+
+    ctx.save();
+
+    ctx.translate(
+        -cameraX,
+        -cameraY
+    );
+
+    drawWorld();
+
+    ctx.restore();
+
+    drawMinimap();
+
+    updateHUD();
+
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetGame(){
+
+    player.x=750;
+    player.y=425;
+
+    player.angle=0;
+
+    player.inCar=false;
+
+    car.x=850;
+    car.y=425;
+
+    car.speed=0;
+
+    car.angle=0;
+
+    money=500;
+
+    wanted=0;
+
+    currentMission=0;
+
+    missionComplete=false;
+
+    missionProgress=0;
+
+    escapeStarted=false;
+
+    lastX=player.x;
+    lastY=player.y;
+
+    document.getElementById("levelScreen").style.display="none";
+
+    document.getElementById("finalScreen").style.display="none";
+
+    updateMissionUI();
+
+    showMessage("GAME RESET!");
+
+}
+
+
+/* =========================================================
+   FINAL GAME
+========================================================= */
+
+function finishGame(){
+
+    missionComplete=true;
+
+    document.getElementById("finalScreen").style.display=
+        "flex";
+
+}
+
+
+/* =========================================================
+   ON-SCREEN BUTTONS
+========================================================= */
+
+function bindHoldButton(id,key){
+
+    const button=document.getElementById(id);
+
+    function press(e){
+
+        e.preventDefault();
+
+        keys[key]=true;
+
+    }
+
+    function release(e){
+
+        e.preventDefault();
+
+        keys[key]=false;
+
+    }
+
+    button.addEventListener(
+        "pointerdown",
+        press
+    );
+
+    button.addEventListener(
+        "pointerup",
+        release
+    );
+
+    button.addEventListener(
+        "pointercancel",
+        release
+    );
+
+    button.addEventListener(
+        "pointerleave",
+        release
+    );
+
+}
+
+bindHoldButton("up","w");
+bindHoldButton("down","s");
+bindHoldButton("left","a");
+bindHoldButton("right","d");
+
+
+document.getElementById("enterBtn")
+.addEventListener("pointerdown",e=>{
+
+    e.preventDefault();
+
+    enterExitCar();
+
+});
+
+
+document.getElementById("resetBtn")
+.addEventListener("pointerdown",e=>{
+
+    e.preventDefault();
+
+    resetGame();
+
+});
+
+
+document.getElementById("restartButton")
+.addEventListener("click",()=>{
+
+    resetGame();
+
+});
+
+
+/* =========================================================
+   START
+========================================================= */
+
+updateMissionUI();
+
+gameLoop();
+
+
+function gameLoop(){
+
+    updatePlayer();
+
+    updateNPCs();
+
+    updatePolice();
+
+    updateWanted();
+
+    updateMission();
+
+    render();
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+</script>
+
+</body>
+</html>
